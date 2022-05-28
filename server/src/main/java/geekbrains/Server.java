@@ -39,9 +39,9 @@ public class Server {
                 @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     socketChannel.pipeline().addLast(
-                            new MessageDecoder(),
+                            new FileDecoder(),
                             new StringEncoder(StandardCharsets.UTF_8),
-                            new ServerHandler()
+                            new FileServerHandler()
                     );
                 }
             });
