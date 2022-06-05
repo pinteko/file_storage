@@ -1,16 +1,14 @@
 package geekbrains;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 public class Client {
@@ -24,11 +22,12 @@ public class Client {
     }
 
     public static void main(String[] args) throws Exception {
-        Message message = new Message("type", 5, new byte[]{1, 2, 3, 4, 5});
-        new Client(9999, "localhost").run(message);
+       // Message message = new Message("type", 5, new byte[]{1, 2, 3, 4, 5});
+        File file = new File("D:\\recent.txt");
+        new Client(9999, "localhost").run(file);
     }
 
-    private void run(Message message) throws Exception {
+    private void run(File file) throws Exception {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
@@ -39,11 +38,11 @@ public class Client {
             client.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            new MessageEncoder(),
+                    ChannelPipeline entries = ch.pipeline().addLast(
+                            new FileEncoder(),
                             new LineBasedFrameDecoder(80),
                             new StringDecoder(StandardCharsets.UTF_8),
-                            new ClientHandler(message)
+                            new FileClientHandler(file)
                     );
                 }
             });
