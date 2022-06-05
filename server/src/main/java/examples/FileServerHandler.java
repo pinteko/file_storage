@@ -1,4 +1,4 @@
-package geekbrains;
+package examples;
 
 
 import io.netty.channel.ChannelFuture;
