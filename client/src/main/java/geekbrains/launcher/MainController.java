@@ -3,13 +3,15 @@ package geekbrains.launcher;
 import geekbrains.message.*;
 import geekbrains.network.MessageProcessor;
 import geekbrains.network.NetworkService;
-import geekbrains.types.Message;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.*;
@@ -18,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
@@ -33,10 +36,31 @@ public class MainController implements Initializable, MessageProcessor {
     public TextField registrationLoginForm;
     @FXML
     public PasswordField registrationPassForm;
+    @FXML
+    public VBox startPanel;
+    @FXML
+    public VBox secondBlockMainPanel;
+    @FXML
+    public HBox upperLocalStorPanel1;
+    @FXML
+    public Button cloudStorageDownload;
+    @FXML
+    public Button cloudStorageDelete;
+    @FXML
+    public Button cloudStorageUpdate;
+    @FXML
+    public Button localStorageSend;
+    @FXML
+    public Button localStorageDelete;
+    @FXML
+    public Button localStorageUpdate;
+    @FXML
+    public VBox firstMainPanel;
 
 
     private String nick;
     private String filePath;
+    private String watchableDirectory = "client" + File.separator + "LocalStorage";
     private NetworkService networkService;
 
     @FXML
@@ -64,7 +88,7 @@ public class MainController implements Initializable, MessageProcessor {
     private PasswordField passwordField;
 
     @FXML
-    private VBox mainPanel;
+    private HBox mainPanel;
 
     @FXML
     private TextArea mainChatArea;
@@ -83,6 +107,8 @@ public class MainController implements Initializable, MessageProcessor {
 
     @FXML
     ListView<StorageItem> listOfCloudStorageElements;
+    @FXML
+    ListView<StorageItem> listOfLocalElements;
 
     @FXML
     private TextField newNickField;
@@ -125,11 +151,10 @@ public class MainController implements Initializable, MessageProcessor {
     }
 
     private void parseIncomingMessage(Object object){
-
         if (object instanceof FileMessage){
             FileMessage fileMessage = (FileMessage)object;
             if (fileMessage.isDirectory() && fileMessage.isEmpty()){
-                Path pathToNewEmptyDirectory = Paths.get("ClientSide"+File.separator+"LocalStorage"+File.separator+""+fileMessage.getFileName());
+                Path pathToNewEmptyDirectory = Paths.get("client"+File.separator+"LocalStorage"+File.separator+""+fileMessage.getFileName());
                 if (Files.exists(pathToNewEmptyDirectory)) {
                     System.out.println("Такая директория уже существует");
                 }else {
@@ -141,7 +166,7 @@ public class MainController implements Initializable, MessageProcessor {
                 }
             }else {
                 try {
-                    Files.write(Paths.get("ClientSide"+File.separator+"LocalStorage"+File.separator+""+fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
+                    Files.write(Paths.get("client"+File.separator+"LocalStorage"+File.separator+""+fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
                 }catch (NullPointerException e){
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -155,16 +180,16 @@ public class MainController implements Initializable, MessageProcessor {
             String[] receivedWords = object.toString().split("/");
             String start = receivedWords[0];
             switch (start) {
-                case "/auth_ok" :
+                case "auth_ok" :
                     this.nick = receivedWords[2];
                     loginPanel.setVisible(false);
                     mainPanel.setVisible(true);
                     break;
-                case "/error" :
+                case "error" :
                     showError(receivedWords[1]);
                     System.out.println("got error " + receivedWords[1]);
                     break;
-                case "/registration_ok" :
+                case "registration_ok" :
                     this.nick = receivedWords[2];
                     registrationBlock.setVisible(false);
                     mainPanel.setVisible(true);
@@ -174,7 +199,7 @@ public class MainController implements Initializable, MessageProcessor {
 
 
 
-    private void showError(String message) {
+    public static void showError(String message) {
         var alert = new Alert(Alert.AlertType.ERROR,
                 "An error occured: " + message,
                 ButtonType.OK);
@@ -189,12 +214,12 @@ public class MainController implements Initializable, MessageProcessor {
         }
     }
     public void sendRegMessageToServer(){
-        if (!registrationLoginForm.getText().isEmpty() && !passwordField.getText().isEmpty() && !repeatPassForm.getText().isEmpty()){
-            if (passwordField.getText().equals(repeatPassForm.getText())){
-                NetworkService.sendRegMessageToServer(loginField.getText(),repeatPassForm.getText());
+        if (!registrationLoginForm.getText().isEmpty() && !registrationPassForm.getText().isEmpty() && !repeatPassForm.getText().isEmpty()){
+            if (registrationPassForm.getText().equals(repeatPassForm.getText())){
+                NetworkService.sendRegMessageToServer(registrationLoginForm.getText(),repeatPassForm.getText());
             }else {
                 registrationMessage.setText("You've entered unequal passwords");
-                passwordField.clear();
+                registrationPassForm.clear();
                 repeatPassForm.clear();
             }
         }
@@ -235,27 +260,53 @@ public class MainController implements Initializable, MessageProcessor {
 
 
 
-    public void showSendFile(ActionEvent actionEvent) {
-        mainPanel.setVisible(false);
-        sendFilePanel.setVisible(true);
+
+    public void goToNextDirectoryInLocalStorageOnDoubleClickOrOpenFile(MouseEvent mouseEvent) {
     }
 
-    public void showCopyFile(ActionEvent actionEvent) {
-        mainPanel.setVisible(false);
-        copyFilePanel.setVisible(true);
-    }
-    public void sendFile(ActionEvent actionEvent) {
-//       String pathHome = pathHomeFile.getText();
-//       String packageCloud = packageAndNameForCloudFile.getText();
-        networkService.transferFilesToCloudStorage(CurrentLogin.getCurrentLogin(), getPathsOfSelectedFilesInCloudStorage());
+    public void goToNextDirectoryInCloudStorageOnDoubleClick(MouseEvent mouseEvent) {
     }
 
-    public void copyFile(ActionEvent actionEvent) {
+    public void choiceAuth(ActionEvent actionEvent) {
+        startPanel.setVisible(false);
+        loginPanel.setVisible(true);
+    }
+
+    public void choiceRegistration(ActionEvent actionEvent) {
+        startPanel.setVisible(false);
+        registrationBlock.setVisible(true);
+    }
+
+    public void selectAllFilesFromLocalStorage(ActionEvent actionEvent) {
+    }
+
+    public void initializeListOfLocalStorageItems(ActionEvent actionEvent) {
+    }
+
+    public void transferFilesToCloudStorage(ActionEvent actionEvent) {
+        networkService.transferFilesToCloudStorage(CurrentLogin.getCurrentLogin(),getPathsOfSelectedFilesInLocalStorage());
+    }
+
+    public LinkedList getPathsOfSelectedFilesInLocalStorage() {
+        try {
+            listOfLocalElements.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            LinkedList<File> listOfSelectedElementsInLocalStorage = new LinkedList<File>();
+            if (listOfLocalElements.getSelectionModel().getSelectedItems().size() != 0) {
+                System.out.println(listOfLocalElements.getSelectionModel().getSelectedItems().size());
+                for (int i = 0; i < listOfLocalElements.getSelectionModel().getSelectedItems().size(); i++) {
+                    listOfSelectedElementsInLocalStorage.add(listOfLocalElements.getSelectionModel().getSelectedItems().get(i).getPathToFile());
+                }
+                return listOfSelectedElementsInLocalStorage;
+            }
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void downloadFilesIntoLocalStorage(ActionEvent actionEvent) {
         networkService.sendFileRequest(getPathsOfSelectedFilesInCloudStorage());
-//        String pathHome = pathHomeFileToCopy.getText();
-//        String packageCloud = packageAndNameOfCloudFile.getText();
-//        Message message = new Message(pathHome, packageCloud);
-//        networkService.send(message, s -> System.out.println("s = " + s));
     }
 
     public LinkedList getPathsOfSelectedFilesInCloudStorage(){
@@ -269,9 +320,19 @@ public class MainController implements Initializable, MessageProcessor {
         return listOfSelectedElementsInCloudStorage;
     }
 
-    public void goToNextDirectoryInLocalStorageOnDoubleClickOrOpenFile(MouseEvent mouseEvent) {
+
+    public void updateCloudStoragePanel(ActionEvent actionEvent) {
     }
 
-    public void goToNextDirectoryInCloudStorageOnDoubleClick(MouseEvent mouseEvent) {
+    public void selectAllFilesFromCloudStorage(ActionEvent actionEvent) {
+    }
+
+    public void goToOpeningPanelToChangeProfileOrLeaveApp(ActionEvent actionEvent) {
+    }
+
+    public void goToPreviousDirectoryInLocalStorage(ActionEvent actionEvent) {
+    }
+
+    public void goToPreviousDirectoryInCloudStorage(ActionEvent actionEvent) {
     }
 }

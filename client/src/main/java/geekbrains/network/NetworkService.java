@@ -1,5 +1,6 @@
 package geekbrains.network;
 
+import geekbrains.launcher.MainController;
 import geekbrains.message.*;
 import geekbrains.property.PropertyReader;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
@@ -17,7 +18,7 @@ public class NetworkService {
 
     private final int port;
 
-    private MessageProcessor messageProcessor;
+    private static MessageProcessor messageProcessor;
     private static Socket socket;
     private static ObjectEncoderOutputStream outcomingStream;
     private static ObjectDecoderInputStream incomingStream;
@@ -53,6 +54,7 @@ public class NetworkService {
         });
         thread.setDaemon(true);
         thread.start();
+        System.out.println("start");
     }
 
     public static void stopConnection() {
@@ -94,8 +96,10 @@ public class NetworkService {
             if (!filesToSendToCloud.isEmpty()) {
                 for (int i = 0; i < filesToSendToCloud.size(); i++) {
                     Path path = Paths.get(filesToSendToCloud.get(i).getAbsolutePath());
-                    outcomingStream.writeObject(new FileMessage(login, path));
-                    outcomingStream.flush();
+//                    if (filesToSendToCloud.get(i).length() < Integer.MAX_VALUE) {
+                        outcomingStream.writeObject(new FileMessage(login, path));
+                        outcomingStream.flush();
+//                    }
                 }
                 return true;
             }
@@ -151,6 +155,7 @@ public class NetworkService {
         }
         return false;
     }
+
 
 }
 

@@ -8,7 +8,7 @@ public class DBRequestHandler {
 
     public static void getConnectionWithDB(){
         try {
-            connection  = DriverManager.getConnection("jdbc:sqlite:users.db");
+            connection  = DriverManager.getConnection("jdbc:sqlite:db/users.db");
             statement = connection.createStatement();
         } catch (SQLException e) {
             e.printStackTrace();
