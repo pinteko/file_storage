@@ -96,10 +96,10 @@ public class NetworkService {
             if (!filesToSendToCloud.isEmpty()) {
                 for (int i = 0; i < filesToSendToCloud.size(); i++) {
                     Path path = Paths.get(filesToSendToCloud.get(i).getAbsolutePath());
-//                    if (filesToSendToCloud.get(i).length() < Integer.MAX_VALUE) {
+                    if (filesToSendToCloud.get(i).length() < Integer.MAX_VALUE) {
                         outcomingStream.writeObject(new FileMessage(login, path));
                         outcomingStream.flush();
-//                    }
+                    }
                 }
                 return true;
             }
