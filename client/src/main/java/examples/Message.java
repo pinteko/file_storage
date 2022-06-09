@@ -1,4 +1,4 @@
-package geekbrains;
+package examples;
 
 import java.util.Arrays;
 

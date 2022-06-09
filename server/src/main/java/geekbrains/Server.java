@@ -9,6 +9,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 import java.nio.charset.StandardCharsets;
@@ -39,9 +41,9 @@ public class Server {
                 @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     socketChannel.pipeline().addLast(
-                            new FileDecoder(),
-                            new StringEncoder(StandardCharsets.UTF_8),
-                            new FileServerHandler()
+                            new ObjectDecoder(150*1024*1024, ClassResolvers.cacheDisabled(null)),
+                            new ClientMessageHandler(),
+                            new StringEncoder(StandardCharsets.UTF_8)
                     );
                 }
             });
