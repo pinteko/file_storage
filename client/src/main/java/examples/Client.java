@@ -1,4 +1,4 @@
-package geekbrains;
+package examples;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;

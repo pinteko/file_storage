@@ -54,7 +54,10 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                             }
                         } else {
                             try {
-                                ctx.writeAndFlush(new FileMessage(fileToRequest));
+                                if (file.length() < Integer.MAX_VALUE) {
+                                    ctx.writeAndFlush(new FileMessage(fileToRequest));
+                                }
+                                else {ctx.writeAndFlush("error/Too big file");}
                             } catch (AccessDeniedException e) {
                                 e.printStackTrace();
                             }
@@ -65,7 +68,7 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 }
             } else if (msg instanceof FileMessage) {
                 FileMessage fileMessage = (FileMessage) msg;
-                Path pathToNewFile = Paths.get("ServerSide/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName());
+                Path pathToNewFile = Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName());
                 if (fileMessage.isDirectory() && fileMessage.isEmpty()) {
                     if (Files.exists(pathToNewFile)) {
                         System.out.println("Файл с таким именем уже существует");
@@ -76,7 +79,7 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                     if (Files.exists(pathToNewFile)) {
                         System.out.println("Файл с таким именем уже существует");
                     } else {
-                        Files.write(Paths.get("ServerSide/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
+                        Files.write(Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
                     }
                 }
                 ctx.writeAndFlush(new UpdateMessage(getContentsOfCloudStorage(fileMessage.getLogin())));
@@ -85,24 +88,24 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 DBRequestHandler.getConnectionWithDB();
                 if (DBRequestHandler.checkIfUserExistsForAuthorization(authMessage.getLogin())) {
                     if (DBRequestHandler.checkIfPasswordIsRight(authMessage.getLogin(), authMessage.getPassword())) {
-                        ctx.writeAndFlush("/auth_ok/userIsValid/" + authMessage.getLogin());
+                        ctx.writeAndFlush("auth_ok/userIsValid/" + authMessage.getLogin());
                     } else {
-                        ctx.writeAndFlush("/error/wrongPassword");
+                        ctx.writeAndFlush("error/wrongPassword");
                     }
                 } else {
-                    ctx.writeAndFlush("/error/userDoesNotExist");
+                    ctx.writeAndFlush("error/userDoesNotExist");
                 }
                 DBRequestHandler.disconnectDB();
             } else if (msg instanceof RegistrationMessage) {
                 RegistrationMessage registrationMessage = (RegistrationMessage) msg;
                 DBRequestHandler.getConnectionWithDB();
                 if (DBRequestHandler.checkIfUserExistsForAuthorization(registrationMessage.getLogin())) {
-                    ctx.writeAndFlush("/error/userAlreadyExists");
+                    ctx.writeAndFlush("error/userAlreadyExists");
                 } else {
                     if (DBRequestHandler.registerNewUser(registrationMessage.getLogin(), registrationMessage.getPassword())) {
-                        File newDirectory = new File("ServerSide/CloudStorage/" + registrationMessage.getLogin());
-                        newDirectory.mkdir();
-                        ctx.writeAndFlush("/registration_ok/registrationIsSuccessful/" + registrationMessage.getLogin());
+                        File newDirectory = new File("server/CloudStorage/" + registrationMessage.getLogin());
+                       boolean b = newDirectory.mkdir();
+                        ctx.writeAndFlush("registration_ok/registrationIsSuccessful/" + registrationMessage.getLogin());
                     }
                 }
                 DBRequestHandler.disconnectDB();
