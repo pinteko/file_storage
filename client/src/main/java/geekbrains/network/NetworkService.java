@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class NetworkService {
 
@@ -96,7 +97,17 @@ public class NetworkService {
             if (!filesToSendToCloud.isEmpty()) {
                 for (int i = 0; i < filesToSendToCloud.size(); i++) {
                     Path path = Paths.get(filesToSendToCloud.get(i).getAbsolutePath());
-                    if (filesToSendToCloud.get(i).length() < Integer.MAX_VALUE) {
+                    if (filesToSendToCloud.get(i).isDirectory()) {
+                        File[] files = filesToSendToCloud.get(i).listFiles();
+                        assert files != null;
+                        if (files.length == 0) {
+                                outcomingStream.writeObject(new FileMessage(login, path, true, true));
+                                outcomingStream.flush();
+                            } else {
+                            outcomingStream.writeObject(new FileMessage(login, path, true, false));
+                            outcomingStream.flush();
+                            NetworkService.directorySending(files, login, path);}
+                    } else if (filesToSendToCloud.get(i).length() < Integer.MAX_VALUE) {
                         outcomingStream.writeObject(new FileMessage(login, path));
                         outcomingStream.flush();
                     }
@@ -109,10 +120,41 @@ public class NetworkService {
         return false;
     }
 
+    public static void directorySending(File[] files, String login, Path path) throws IOException {
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+                if (Objects.requireNonNull(files[i].listFiles()).length == 0) {
+                    outcomingStream.writeObject(new FileMessage(login, files[i].getAbsoluteFile().toPath(), true, true));
+                    outcomingStream.flush();
+                }
+                else {
+                    outcomingStream.writeObject(new FileMessage(login, files[i].getAbsoluteFile().toPath(), true, true));
+                    outcomingStream.flush();
+                    NetworkService.directorySending(Objects.requireNonNull(files[i].listFiles()), login, files[i].getAbsoluteFile().toPath());
+                }
+            }
+            else {
+                    outcomingStream.writeObject(new FileMessage(login, files[i].getAbsoluteFile().toPath(), path.getFileName().toString()));
+                    outcomingStream.flush();
+            }
+        }
+    }
+
 
     public static boolean sendUpdateMessageToServer(String login){
         try {
             outcomingStream.writeObject(new UpdateMessage(login));
+            outcomingStream.flush();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean sendUpdatePassMessageToServer(String login, String password){
+        try {
+            outcomingStream.writeObject(new UpdatePassMessage(login, password));
             outcomingStream.flush();
             return true;
         } catch (IOException e) {

@@ -19,7 +19,7 @@
             </VBox>
         </HBox>
         <Button text="SEND" onAction="#sendChangeNick"/>
-        <Button text="RETURN" onAction="#returnToChat"/>
+        <Button text="RETURN" onAction="#returnToMainWindow"/>
     </VBox>
 
     <VBox visible="false" fx:id="changePasswordPanel">
@@ -34,7 +34,7 @@
             </VBox>
         </HBox>
         <Button text="SEND" onAction="#sendChangePass"/>
-        <Button text="RETURN" onAction="#returnToChat"/>
+        <Button text="RETURN" onAction="#returnToMainWindow"/>
     </VBox>
 
     <VBox prefHeight="100.0" prefWidth="200.0" fx:id="startPanel">
@@ -72,7 +72,7 @@
         </MenuBar>
         <HBox  prefHeight="90" prefWidth="430"  style="-fx-background-color: black" alignment="CENTER_LEFT">
             <Label prefWidth="10"></Label>
-            <Button prefWidth="180" fx:id="goToPreviousFolderInLocalStorageButton"  onAction="#goToPreviousDirectoryInLocalStorage" visible="false"></Button>
+            <Button prefWidth="180" fx:id="goToPreviousFolderInLocalStorageButton"  onAction="#goToPreviousDirectoryInLocalStorage" visible="false">Back</Button>
             <Label text="Local Storage" textFill="white" style="-fx-font-size: 15;"></Label>
         </HBox>
         <HBox prefWidth="430" prefHeight="95" fx:id="upperLocalStorPanel" >
@@ -91,7 +91,7 @@
     <VBox prefHeight="600" prefWidth="500" fx:id="secondBlockMainPanel">
         <HBox prefWidth="430" prefHeight="90" style="-fx-background-color: black" alignment="CENTER">
             <Label prefWidth="20"></Label>
-            <Button prefWidth="180" fx:id="goToPreviousFolderInCloudStorageButton" onAction="#goToPreviousDirectoryInCloudStorage" visible="false"></Button>
+            <Button prefWidth="180" fx:id="goToPreviousFolderInCloudStorageButton" onAction="#goToPreviousDirectoryInCloudStorage" visible="false">Back</Button>
             <Label text="Cloud Storage" textFill="white" alignment="CENTER" style="-fx-font-size: 15;" prefWidth="540" ></Label>
         </HBox>
         <HBox prefWidth="430" prefHeight="92.5" fx:id="upperLocalStorPanel1">
@@ -105,7 +105,7 @@
         <HBox spacing="8" prefHeight="94" alignment="CENTER" style="-fx-background-color: black;">
             <Button prefHeight="30" prefWidth="150" fx:id="cloudStorageDownload" style="-fx-text-fill: blue;" onAction="#downloadFilesIntoLocalStorage">Download</Button>
             <Button prefHeight="30" prefWidth="150" fx:id="cloudStorageDelete" style="-fx-text-fill: blue;" onAction="#selectAllFilesFromCloudStorage">Select All</Button>
-            <Button prefHeight="30" prefWidth="150" fx:id="cloudStorageUpdate" style="-fx-text-fill: blue;" onAction="#updateCloudStoragePanel">Update</Button>
+            <Button prefHeight="30" prefWidth="150" fx:id="cloudStorageUpdate" style="-fx-text-fill: blue;" onAction="#sendChangeNick">Update</Button>
         </HBox>
     </VBox>
     </HBox>

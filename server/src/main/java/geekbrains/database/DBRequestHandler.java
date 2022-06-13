@@ -58,6 +58,15 @@ public class DBRequestHandler {
         return false;
     }
 
+    public static void changePasswordInDB (String login, String password) {
+        String dbQuery = "UPDATE users SET password = '"+password+"' WHERE login='"+login+"'";
+        try {
+            statement.executeUpdate(dbQuery);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static boolean registerNewUser(String login, String password){
         String dbQuery = "INSERT INTO users(login,password) VALUES ('"+login+"','"+password+"')";
         try {
