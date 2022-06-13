@@ -68,18 +68,22 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 }
             } else if (msg instanceof FileMessage) {
                 FileMessage fileMessage = (FileMessage) msg;
-                Path pathToNewFile = Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName());
-                if (fileMessage.isDirectory() && fileMessage.isEmpty()) {
+
+                if (fileMessage.isDirectory()) {
+                    Path pathToNewFile = Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName());
                     if (Files.exists(pathToNewFile)) {
                         System.out.println("Файл с таким именем уже существует");
                     } else {
                         Files.createDirectory(pathToNewFile);
                     }
                 } else {
+                    Path pathToNewFile = Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator +
+                            fileMessage.getParentName() + File.separator + fileMessage.getFileName());
                     if (Files.exists(pathToNewFile)) {
                         System.out.println("Файл с таким именем уже существует");
                     } else {
-                        Files.write(Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator + fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
+                        Files.write(Paths.get("server/CloudStorage/" + fileMessage.getLogin() + File.separator +
+                                fileMessage.getParentName() + File.separator + fileMessage.getFileName()), fileMessage.getData(), StandardOpenOption.CREATE);
                     }
                 }
                 ctx.writeAndFlush(new UpdateMessage(getContentsOfCloudStorage(fileMessage.getLogin())));
@@ -89,12 +93,19 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 if (DBRequestHandler.checkIfUserExistsForAuthorization(authMessage.getLogin())) {
                     if (DBRequestHandler.checkIfPasswordIsRight(authMessage.getLogin(), authMessage.getPassword())) {
                         ctx.writeAndFlush("auth_ok/userIsValid/" + authMessage.getLogin());
+                        ctx.writeAndFlush(new UpdateMessage(getContentsOfCloudStorage(authMessage.getLogin())));
                     } else {
                         ctx.writeAndFlush("error/wrongPassword");
                     }
                 } else {
                     ctx.writeAndFlush("error/userDoesNotExist");
                 }
+                DBRequestHandler.disconnectDB();
+            } else if (msg instanceof UpdatePassMessage) {
+                UpdatePassMessage updatePassMessage = (UpdatePassMessage) msg;
+                DBRequestHandler.getConnectionWithDB();
+                DBRequestHandler.changePasswordInDB(updatePassMessage.getLogin(), updatePassMessage.getPassword());
+                ctx.writeAndFlush("success/password update");
                 DBRequestHandler.disconnectDB();
             } else if (msg instanceof RegistrationMessage) {
                 RegistrationMessage registrationMessage = (RegistrationMessage) msg;
@@ -143,7 +154,7 @@ public class ClientMessageHandler extends ChannelInboundHandlerAdapter {
     public static HashMap<Integer, LinkedList<File>> getContentsOfCloudStorage(String login) {
         HashMap<Integer, LinkedList<File>> cloudStorageContents;
         LinkedList<File> listCloudStorageFiles = new LinkedList<>();
-        File path = new File("ServerSide/CloudStorage/" + login);
+        File path = new File("server/CloudStorage/" + login);
         File[] files = path.listFiles();
         cloudStorageContents = new HashMap<>();
         if (files.length == 0) {

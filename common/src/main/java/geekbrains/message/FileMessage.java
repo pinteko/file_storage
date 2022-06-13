@@ -12,6 +12,8 @@ public class FileMessage extends AbstractMessage {
     private boolean isDirectory;
     private boolean isEmpty;
 
+    private String parentPath = "";
+
     public FileMessage(Path path) throws IOException {
         fileName = path.getFileName().toString();
         data = Files.readAllBytes(path);
@@ -23,6 +25,20 @@ public class FileMessage extends AbstractMessage {
         this.isDirectory = isDirectory;
         this.isEmpty = isEmpty;
     }
+
+    public FileMessage(String login, Path path, boolean isDirectory, boolean isEmpty){
+        this.login = login;
+        fileName = path.getFileName().toString();
+        this.isDirectory = isDirectory;
+        this.isEmpty = isEmpty;
+    }
+    public FileMessage(String login, Path path, String parentName) throws IOException, AccessDeniedException {
+        fileName = path.getFileName().toString();
+        data = Files.readAllBytes(path);
+        this.login = login;
+        this.parentPath = parentName;
+    }
+
     public FileMessage(String login, Path path) throws IOException, AccessDeniedException {
         fileName = path.getFileName().toString();
         data = Files.readAllBytes(path);
@@ -47,5 +63,9 @@ public class FileMessage extends AbstractMessage {
 
     public String getLogin() {
         return login;
+    }
+
+    public String getParentName() {
+        return parentPath;
     }
 }
